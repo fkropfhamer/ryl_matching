@@ -16,13 +16,26 @@ def address_to_cord(address):
     return cord.point
 
 
-def create_address(street, postalcode, city='münchen', country='germany'):
+def create_address(street: str, postalcode: str, city='münchen', country='germany'):
     return {
         'street': street,
         'city': city,
         'country': country,
         'postalcode': postalcode
     }
+
+school_addresses = {
+    'Mittelschule Fürstenrieder Straße': create_address(street='1 Geschwister-Scholl-Platz', postalcode='80539')
+}
+
+
+def get_school_address(school: str):
+    if school in school_addresses:
+        return school_addresses[school]
+    
+    print(f"No address for school {school} found")
+
+    return None
 
 
 if __name__ == '__main__':
