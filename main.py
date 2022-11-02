@@ -11,6 +11,7 @@ def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('mentor_file', type=str, help='path of mentor csv file')
     parser.add_argument('mentee_file', type=str, help='path of mentee csv file')
+    parser.add_argument('-o', '--out_file', type=str, help='path for output file')
     parser.add_argument('-m', action='store_true')
 
     args = parser.parse_args()
@@ -39,10 +40,21 @@ def main():
     print("len: ", len(list(other_mentees)))
 
 
-    calculate_scores(male_mentors, male_mentees)
-    calculate_scores(female_mentors, female_mentees)
-    calculate_scores(other_mentors, other_mentees)
+    male_matches = calculate_scores(male_mentors, male_mentees)
+    female_matches = calculate_scores(female_mentors, female_mentees)
+    other_matches = calculate_scores(other_mentors, other_mentees)
 
+    matches = male_matches + female_matches + other_matches
+
+    if args.out_file:
+        with open(args.out_file, 'w') as out_file:
+            fieldnames = ['Mentor', 'Mentee', 'Score']
+            writer = csv.DictWriter(out_file, fieldnames=fieldnames)
+
+            writer.writeheader()
+            rows = map(lambda match: { 'Mentor': match['mentor'].name, 'Mentee': match['mentee'].name, 'Score': match['score']}, matches)
+
+            writer.writerows(rows)
 
 def filter_gender(entities: list):
     MALE = "männlich"
@@ -80,6 +92,8 @@ def calculate_scores(mentors: list, mentees: list):
 
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
 
+    matches = []
+
     for match in zip(row_ind, col_ind):
         print(match)
         mentor = mentors[match[0]]
@@ -89,7 +103,12 @@ def calculate_scores(mentors: list, mentees: list):
 
         print(f"Matching {mentor.name} with {mentee.name} with a score of {-score}")
 
+        matches.append({'mentee': mentee, 'mentor': mentor, 'score': -score})
+
     
+    return matches
+
+
 
 def read_csv_file(path: str) -> list:
     with open(path) as file:
